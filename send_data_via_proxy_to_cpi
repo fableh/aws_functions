@@ -1,0 +1,30 @@
+'use strict';
+
+const AWS = require('aws-sdk');
+var https = require('https');
+
+exports.handler = (event, context, callback) => {
+    console.log('Received event:', event.clickType);
+    var poxy_host_sapcpi = "<proxy>.hana.ondemand.com";
+    var proxy_path = "/SAPCPI"; 
+    var body = JSON.stringify({"SN":`${event.serialNumber}`,"BATTERY": `${event.batteryVoltage}`,"TYPE":`${event.clickType}`});
+      
+var request = new https.request({
+        hostname: poxy_host_sapcpi,
+        port: 443,
+        path: proxy_path,
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Accept': '*/*'
+        }
+    });
+    request.end( body );
+    request.on('response', function (response) {
+    console.log('STATUS: ' + response.statusCode);
+    if( response.statusCode === 201 ){
+        console.log("Successfully received response system");
+        callback("Processed correctly");
+    }
+});
+};
