@@ -1,0 +1,33 @@
+'use strict';
+
+const AWS = require('aws-sdk');
+var https = require('https');
+
+exports.handler = (event, context, callback) => {
+    console.log('Received event:', event.clickType);
+ //    var body = JSON.stringify({"ID":"1","MESSAGE":`Hello from your IoT Button ${event.serialNumber}: ${event.clickType}`});
+      var body = JSON.stringify({"SN":`${event.serialNumber}`,"BATTERY": `${event.batteryVoltage}`,"TYPE":`${event.clickType}`});
+      var authStrIoT = 'basic_authorization("<user>", "<pw>")';
+var request = new https.request({
+        
+        hostname: "<cpi_iflmap-host>",
+        port: 443,
+        
+        path:"/http/aws_iot",
+        method: "POST",
+        headers: {
+            'Authorization': authStrIoT,
+            'Content-Type': 'application/json; charset=utf-8',
+            'Accept': '*/*'
+        }
+    });
+    request.end( body );
+    request.on('response', function (response) {
+    console.log('STATUS: ' + response.statusCode);
+    if( response.statusCode === 201 ){
+        console.log("Successfully received response system");
+        callback("Processed correctly");
+    }
+});
+   
+};
